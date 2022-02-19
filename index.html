@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+   <link rel="stylesheet" href="css/style.css">
+   <title>Minesweeper</title>
+</head>
+<body>
+   <script src="script/app.js" defer></script>
+
+   <header>
+      <div class="container">
+         <div class="row">
+            <div class="col col-logo">
+               <div class="img-wrapper">
+                  <img src="img/Akita Logo.png" alt="">
+               </div>
+               <h2>Minesweeper</h2>
+            </div>
+            <div class="col col-controls">
+               <label for="difficulty-select">Difficoltà:</label>
+               <select name="difficulty-select" id="difficulty-select">
+                  <option value="" disabled selected>-- Scegli la difficoltà --</option>
+                  <option value="1">Beginner</option>
+                  <option value="2">Intermediate</option>
+                  <option value="3">Expert</option>
+                  <option value="4">Custom</option>
+               </select>
+               <button id="difficulty-submit">Play</button>
+            </div>
+         </div>
+      </div>
+   </header>
+   
+   <main>
+      <div class="grid-wrapper">
+         <div class="grid">
+         </div>
+      </div>
+
+      <!-- <div class="popup">
+         <h2 class="popup_title">GAME OVER</h2>
+         <button class="popup_play-again">Play again</button>
+      </div> -->
+
+      <div class="info-panel">
+         <p class="info_difficulty">Difficulty: <span>easy</span></p>
+         <p class="info_grid">Grid: <span>9x9</span></p>
+         <p class="info_bombs">Bombs: <span>10</span></p>
+         <p class="info_flags">Flags: <span>8/10</span></p>
+         <p class="info_timer">00:18</p>
+      </div>
+   </main>
+
+   <footer>
+      <div class="container">
+         <p>Made with <span class="heart">&hearts;</span> by <a href="#">Simone Sada</a></p>
+      </div>
+   </footer>
+
+</body>
+</html>
