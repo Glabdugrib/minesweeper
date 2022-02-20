@@ -62,9 +62,13 @@ function playGame() {
    // Populate grid
    generateGrid(difficulty);
 
+   // PROVA: trovia adiacenti
+   const adjacentElementsArray = calcAdjacentsArray(difficulty);
+   console.log(adjacentElementsArray);
+
    // Add numbers
-   const adjacentBombsArray = addAdjacentBombs(difficulty, bombsPositions);
-   console.log(adjacentBombsArray);
+   // const adjacentBombsArray = addAdjacentBombs(difficulty, bombsPositions);
+   // console.log(adjacentBombsArray);
 
    // Add select event on grid
    grid.addEventListener("click", selectGridElement);
@@ -233,6 +237,44 @@ function calcAdjacentBombs(element, difficulty, bombsPositions) {
 
    // element.append(adjacentBombs);
    return adjacentBombs;
+}
+
+
+// Find adjacents cells for a specified element
+function findAdjacents(element, difficulty) {
+   const rows = difficulty.rows;
+   const columns = difficulty.columns;
+
+   const rowIndex = parseInt(element.dataset.rowIndex);
+   const columnIndex = parseInt(element.dataset.columnIndex);
+
+   const adjacentElements = [];
+
+   for(let i = Math.max(rowIndex - 1, 1); i <= Math.min(rowIndex + 1, columns); i++) {
+      for(let j = Math.max(columnIndex - 1, 1); j <= Math.min(columnIndex + 1, rows); j++) {
+         const adjacentElement = document.querySelector(`[data-row-index="${i}"][data-column-index="${j}"]`);
+         if(!(i === rowIndex) && (j === columnIndex)) {
+            adjacentElements.push(adjacentElement.dataset.number);
+         }
+      }
+   }
+
+   return adjacentElements;
+}
+
+// Find adjacents cells for a specified element
+function calcAdjacentsArray(difficulty) {
+   const adjacentElementsArray = [];
+   const gridElementNum = difficulty.rows * difficulty.columns;
+   const elementsArray = document.querySelectorAll(".grid-element");
+
+   for(let i = 0; i < gridElementNum; i++) {
+      const element = elementsArray[i];
+      const adjacentElements = findAdjacents(element, difficulty);
+      adjacentElementsArray.push(adjacentElements);
+   }
+   
+   return adjacentElementsArray;
 }
 
 
