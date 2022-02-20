@@ -64,7 +64,7 @@ function playGame() {
 
    // PROVA: trovia adiacenti
    const adjacentElementsArray = calcAdjacentsArray(difficulty);
-   // console.log(adjacentElementsArray);
+   console.log(adjacentElementsArray);
 
    // Add numbers of adjacent bombs
    const adjacentBombsArray = addAdjacentBombs(difficulty, bombsPositions, adjacentElementsArray);
@@ -84,15 +84,72 @@ function playGame() {
          revealBombs(elementsArray, bombsPositions);
          console.log("HAI PERSO!");
       } else {
-         const adjacentBombs = adjacentBombsArray[element.dataset.number - 1];
-         element.classList.add("selected");
-         if(adjacentBombs > 0) {
-            element.append(adjacentBombs);
-         } 
-         // Check vittoria
+
+         revealElement(element, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions);
+
+         // const adjacentBombs = adjacentBombsArray[element.dataset.number - 1];
+         // element.classList.add("selected");
+         // if(adjacentBombs > 0) {
+         //    element.append(adjacentBombs);
+         // } else {
+         //    const elementIndex = parseInt(element.dataset.number) - 1;
+         //    const adjacentElementsNumbers = adjacentElementsArray[elementIndex];
+
+         //    for(let i = 0; i < adjacentElements.length; i++) {
+         //       const adjacentElementIndex = parseInt(adjacentElementsNumbers[i]) - 1;
+         //       const adjacentElement = elementsArray[adjacentElementIndex];
+
+         //       if(!isBomb(adjacentElement, bombsPositions)) {
+         //          // Applica la funzione selectGridElement(event) a adjacentElement
+         //          // Forse serve creare una funzione flip/reveal
+         //       }
+
+         //    }
+         // }
+         // // Check vittoria
       }
    }
 
+
+   
+
+}
+
+
+// Rivela cella - da aggiungere no controllo se già "selected", aggiungere "flip particolare" per celle con numeri
+function revealElement(element, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions) {
+
+   if(element.dataset.selected === "true") { // se cella già flippata, esce da funzione
+      return;
+   }
+
+   const adjacentBombs = adjacentBombsArray[element.dataset.number - 1];
+   element.dataset.selected = "true";
+   element.classList.add("selected");
+   if(adjacentBombs > 0) {
+      element.append(adjacentBombs);
+   } else {
+      const elementIndex = parseInt(element.dataset.number) - 1;
+      const adjacentElementsNumbers = adjacentElementsArray[elementIndex];
+      console.log(element);
+      console.log(adjacentElementsNumbers);
+
+      for(let i = 0; i < adjacentElementsNumbers.length; i++) {
+         const adjacentElementIndex = parseInt(adjacentElementsNumbers[i]) - 1;
+         const adjacentElement = elementsArray[adjacentElementIndex];
+         // console.log(adjacentElementIndex);
+         console.log(adjacentElement);
+         console.log(bombsPositions);
+
+         if(!isBomb(adjacentElement, bombsPositions)) {
+            // Applica la funzione selectGridElement(event) a adjacentElement
+            // Forse serve creare una funzione flip/reveal
+            revealElement(adjacentElement, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions);
+         }
+
+      }
+   }
+   // Check vittoria
 }
 
 
