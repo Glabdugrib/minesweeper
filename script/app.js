@@ -64,11 +64,10 @@ function playGame() {
 
    // PROVA: trovia adiacenti
    const adjacentElementsArray = calcAdjacentsArray(difficulty);
-   console.log(adjacentElementsArray);
+   // console.log(adjacentElementsArray);
 
-   // Add numbers
-   // const adjacentBombsArray = addAdjacentBombs(difficulty, bombsPositions);
-   // console.log(adjacentBombsArray);
+   // Add numbers of adjacent bombs
+   const adjacentBombsArray = addAdjacentBombs(difficulty, bombsPositions, adjacentElementsArray);
 
    // Add select event on grid
    grid.addEventListener("click", selectGridElement);
@@ -103,7 +102,7 @@ function resetGrid() {
 }
 
 
-// Salva l'opzione scelta nel select
+// Store selected difficulty
 function getDifficultyChoice() {
    const difficultySelect = document.getElementById("difficulty-select");
    // console.log(`difficultySelect.value: ${difficultySelect.value}`);
@@ -114,8 +113,8 @@ function getDifficultyChoice() {
 // Calculate grid dimensions and info
 function generateGridDimensions(difficultyValue) {
    let difficulty = {};
-
-   for(let i = 0; i < difficultyParameters.length; i++) {
+   
+   for(let i = 0; i < difficultyParameters.length; i++) { // Migliorabile? Senza for, con accesso diretto all'array con posizione [difficultyValue - 1]
       if (difficultyParameters[i].value === difficultyValue) {
          difficulty = {...difficultyParameters[i]};
       }
@@ -140,11 +139,11 @@ function generateBombs(difficulty) {
       bombsPositions.push(bombIndex);
    }
 
-   return bombsPositions;
+   return bombsPositions.sort();
 }
 
 
-// Genera un numero intero casuale all'interno dell'intervallo (estermi compresi)
+// Generate random intenger between min & max (included)
 function getRandoimIntInclusive(min, max) {
    min = Math.ceil(min);
    max = Math.floor(max);
@@ -167,11 +166,11 @@ function generateGrid(difficulty) {
       element.classList.add("grid-element");
       element.dataset.number = i + 1;
 
-      // Calculate grid rowIndex
+      // Calc grid rowIndex
       let rowIndex = Math.ceil((i + 1) / columns);
       element.dataset.rowIndex = rowIndex;
       
-      // Calculate grid columnIndex
+      // Calc grid columnIndex
       let columnIndex = (i + 1) % columns;
       if(columnIndex === 0) {
          columnIndex = columns;
@@ -184,20 +183,17 @@ function generateGrid(difficulty) {
 
 
 // Add the number of adjacent bombs in every blank element
-function addAdjacentBombs(difficulty, bombsPositions) {
+function addAdjacentBombs(difficulty, bombsPositions, adjacentElementsArray) {
    const elementsArray = document.querySelectorAll(".grid-element");
    const ajdacentBombsArray = [];
-   // console.log(elementsArray);
+   // console.log(adjacentElementsArray);
 
    for (let i = 0; i < elementsArray.length; i++) {
       const element = elementsArray[i];
+      const adjacentElements = adjacentElementsArray[i];
       // console.log(element);
-
-      // if(!isBomb(element, bombsPositions)) { // if not bomb => insert number
-      //    calcAdjacentBombs(element, difficulty, bombsPositions);
-      // }
-
-      const adjacentBombs = calcAdjacentBombs(element, difficulty, bombsPositions);
+      // console.log("addAdjacentBombs1: " + adjacentElements);
+      const adjacentBombs = calcAdjacentBombs(element, bombsPositions, elementsArray, adjacentElements);
       ajdacentBombsArray.push(adjacentBombs);
    }
 
@@ -206,61 +202,27 @@ function addAdjacentBombs(difficulty, bombsPositions) {
 
 
 // Calculate how many bombs are adjacent to the element
-function calcAdjacentBombs(element, difficulty, bombsPositions) {
-   const rows = difficulty.rows;
-   const columns = difficulty.columns;
-
-   const rowIndex = parseInt(element.dataset.rowIndex);
-   const columnIndex = parseInt(element.dataset.columnIndex);
-   // console.log(rowIndex, columnIndex);
+function calcAdjacentBombs(element, bombsPositions, elementsArray, adjacentElements) {
+   // console.log(adjacentElements);
 
    let adjacentBombs = 0;
 
-   // console.log(`Elemento (${rowIndex}, ${columnIndex})`);
-   // console.log(`rowIndex + 1: ${rowIndex + 1}, columns: ${columns}, min: ${Math.min(rowIndex + 1, columns)}`)
-   // console.log(`Riga: da ${Math.max(rowIndex - 1, 1)} a ${Math.min(rowIndex + 1, columns)}`);
-   // console.log(`Colonna: da ${Math.max(columnIndex - 1, 1)} a ${Math.min(columnIndex + 1, rows)}`);
-
-   if(!isBomb(element, bombsPositions)) {
-      for(let i = Math.max(rowIndex - 1, 1); i <= Math.min(rowIndex + 1, columns); i++) {
-         for(let j = Math.max(columnIndex - 1, 1); j <= Math.min(columnIndex + 1, rows); j++) {
-            const adjacentElement = document.querySelector(`[data-row-index="${i}"][data-column-index="${j}"]`);
-            // console.log(`i: ${i}, j: ${j}, numero: ${adjacentElement.dataset.number}, ${isBomb(adjacentElement, bombsPositions)}`);
-            if(isBomb(adjacentElement, bombsPositions)) {
-               adjacentBombs++;
-            }
+   if(isBomb(element, bombsPositions)) {
+      adjacentBombs = -1; // non ha senso calcolare il numero di bombe adiacente ad una bomba
+   } else {
+      for(let i = 0; i < adjacentElements.length; i++) {
+         const adjacentIndex = parseInt(adjacentElements[i] - 1);
+         const adjacentElement = elementsArray[adjacentIndex];
+         // console.log(adjacentElement);
+         if(isBomb(adjacentElement, bombsPositions)) {
+            adjacentBombs++;
          }
       }
-   } else {
-      adjacentBombs = -1;
    }
 
-   // element.append(adjacentBombs);
    return adjacentBombs;
 }
 
-
-// Find adjacents cells for a specified element
-function findAdjacents(element, difficulty) {
-   const rows = difficulty.rows;
-   const columns = difficulty.columns;
-
-   const rowIndex = parseInt(element.dataset.rowIndex);
-   const columnIndex = parseInt(element.dataset.columnIndex);
-
-   const adjacentElements = [];
-
-   for(let i = Math.max(rowIndex - 1, 1); i <= Math.min(rowIndex + 1, columns); i++) {
-      for(let j = Math.max(columnIndex - 1, 1); j <= Math.min(columnIndex + 1, rows); j++) {
-         const adjacentElement = document.querySelector(`[data-row-index="${i}"][data-column-index="${j}"]`);
-         if(!(i === rowIndex) && (j === columnIndex)) {
-            adjacentElements.push(adjacentElement.dataset.number);
-         }
-      }
-   }
-
-   return adjacentElements;
-}
 
 // Find adjacents cells for a specified element
 function calcAdjacentsArray(difficulty) {
@@ -275,6 +237,33 @@ function calcAdjacentsArray(difficulty) {
    }
    
    return adjacentElementsArray;
+}
+
+
+// Find adjacents cells for a specified element
+function findAdjacents(element, difficulty) {
+   const rows = difficulty.rows;
+   const columns = difficulty.columns;
+
+   const rowIndex = parseInt(element.dataset.rowIndex);
+   const columnIndex = parseInt(element.dataset.columnIndex);
+
+   const adjacentElements = [];
+   // console.log(element);
+
+   for(let i = Math.max(rowIndex - 1, 1); i <= Math.min(rowIndex + 1, columns); i++) {
+      for(let j = Math.max(columnIndex - 1, 1); j <= Math.min(columnIndex + 1, rows); j++) {
+         const adjacentElement = document.querySelector(`[data-row-index="${i}"][data-column-index="${j}"]`);
+         // console.log(adjacentElement);
+         // console.log(!((i === rowIndex) && (j === columnIndex)));
+         if(!((i === rowIndex) && (j === columnIndex))) {
+            adjacentElements.push(adjacentElement.dataset.number);
+         }
+      }
+   }
+   // console.log(adjacentElements);
+
+   return adjacentElements;
 }
 
 
