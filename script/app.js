@@ -35,7 +35,7 @@ const difficultyParameters = [
 ];
 
 const gridWrapper = document.querySelector(".grid-wrapper");
-const grid = document.querySelector(".grid");
+
 
 const difficultySubmit = document.getElementById("difficulty-submit");
 difficultySubmit.addEventListener("click", playGame);
@@ -46,8 +46,11 @@ difficultySubmit.addEventListener("click", playGame);
 // Execute game
 function playGame() {
 
+   console.log("\nPLAY!");
+   let grid = document.querySelector(".grid");
+
    // Reset grid
-   resetGrid();
+   grid = resetGrid(grid);
 
    // Save select input
    const difficultyValue = getDifficultyChoice();
@@ -57,17 +60,21 @@ function playGame() {
 
    // Calculate bombs indexes
    const bombsPositions = generateBombs(difficulty);
+   console.log("\nBombs positions");
    console.log(bombsPositions);
 
    // Populate grid
-   generateGrid(difficulty);
+   generateGrid(grid, difficulty);
 
    // PROVA: trovia adiacenti
    const adjacentElementsArray = calcAdjacentsArray(difficulty);
-   console.log(adjacentElementsArray);
+   // console.log("\nAdjacent elements array");
+   // console.log(adjacentElementsArray);
 
    // Add numbers of adjacent bombs
-   const adjacentBombsArray = addAdjacentBombs(difficulty, bombsPositions, adjacentElementsArray);
+   const adjacentBombsArray = addAdjacentBombs(bombsPositions, adjacentElementsArray);
+   // console.log("\nAdjacent bombs array");
+   // console.log(adjacentBombsArray);
 
    // Add select event on grid
    grid.addEventListener("click", selectGridElement);
@@ -110,52 +117,20 @@ function playGame() {
       }
    }
 
-
-   
-
 }
 
-
-// Rivela cella - da aggiungere no controllo se già "selected", aggiungere "flip particolare" per celle con numeri
-function revealElement(element, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions) {
-
-   if(element.dataset.selected === "true") { // se cella già flippata, esce da funzione
-      return;
+// Reset grid content
+function resetGrid(grid) {
+   // grid.innerHTML = "";
+   if(grid != null) {
+      grid.remove();
    }
 
-   const adjacentBombs = adjacentBombsArray[element.dataset.number - 1];
-   element.dataset.selected = "true";
-   element.classList.add("selected");
-   if(adjacentBombs > 0) {
-      element.append(adjacentBombs);
-   } else {
-      const elementIndex = parseInt(element.dataset.number) - 1;
-      const adjacentElementsNumbers = adjacentElementsArray[elementIndex];
-      console.log(element);
-      console.log(adjacentElementsNumbers);
+   grid = document.createElement("div");
+   grid.classList.add("grid");
+   gridWrapper.append(grid);
 
-      for(let i = 0; i < adjacentElementsNumbers.length; i++) {
-         const adjacentElementIndex = parseInt(adjacentElementsNumbers[i]) - 1;
-         const adjacentElement = elementsArray[adjacentElementIndex];
-         // console.log(adjacentElementIndex);
-         console.log(adjacentElement);
-         console.log(bombsPositions);
-
-         if(!isBomb(adjacentElement, bombsPositions)) {
-            // Applica la funzione selectGridElement(event) a adjacentElement
-            // Forse serve creare una funzione flip/reveal
-            revealElement(adjacentElement, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions);
-         }
-
-      }
-   }
-   // Check vittoria
-}
-
-
-// Resetta il contenuto della griglia
-function resetGrid() {
-   grid.innerHTML = "";
+   return grid;
 }
 
 
@@ -170,13 +145,13 @@ function getDifficultyChoice() {
 // Calculate grid dimensions and info
 function generateGridDimensions(difficultyValue) {
    let difficulty = {};
-   
-   for(let i = 0; i < difficultyParameters.length; i++) { // Migliorabile? Senza for, con accesso diretto all'array con posizione [difficultyValue - 1]
-      if (difficultyParameters[i].value === difficultyValue) {
-         difficulty = {...difficultyParameters[i]};
-      }
-   }
 
+   difficultyParameters.forEach(el => {
+      if (el.value === difficultyValue) {
+         difficulty = {...el};
+      }
+   });
+   
    return difficulty;
 }
 
@@ -196,7 +171,7 @@ function generateBombs(difficulty) {
       bombsPositions.push(bombIndex);
    }
 
-   return bombsPositions.sort();
+   return bombsPositions;
 }
 
 
@@ -209,7 +184,7 @@ function getRandoimIntInclusive(min, max) {
 
 
 // Generate grid elements
-function generateGrid(difficulty) {
+function generateGrid(grid, difficulty) {
    const gridElementNum = difficulty.rows * difficulty.columns;
    const rows = difficulty.rows;
    const columns = difficulty.columns;
@@ -224,7 +199,7 @@ function generateGrid(difficulty) {
       element.dataset.number = i + 1;
 
       // Calc grid rowIndex
-      let rowIndex = Math.ceil((i + 1) / columns);
+      const rowIndex = Math.ceil((i + 1) / columns);
       element.dataset.rowIndex = rowIndex;
       
       // Calc grid columnIndex
@@ -239,65 +214,30 @@ function generateGrid(difficulty) {
 }
 
 
-// Add the number of adjacent bombs in every blank element
-function addAdjacentBombs(difficulty, bombsPositions, adjacentElementsArray) {
-   const elementsArray = document.querySelectorAll(".grid-element");
-   const ajdacentBombsArray = [];
-   // console.log(adjacentElementsArray);
-
-   for (let i = 0; i < elementsArray.length; i++) {
-      const element = elementsArray[i];
-      const adjacentElements = adjacentElementsArray[i];
-      // console.log(element);
-      // console.log("addAdjacentBombs1: " + adjacentElements);
-      const adjacentBombs = calcAdjacentBombs(element, bombsPositions, elementsArray, adjacentElements);
-      ajdacentBombsArray.push(adjacentBombs);
-   }
-
-   return ajdacentBombsArray;
-}
-
-
-// Calculate how many bombs are adjacent to the element
-function calcAdjacentBombs(element, bombsPositions, elementsArray, adjacentElements) {
-   // console.log(adjacentElements);
-
-   let adjacentBombs = 0;
-
-   if(isBomb(element, bombsPositions)) {
-      adjacentBombs = -1; // non ha senso calcolare il numero di bombe adiacente ad una bomba
-   } else {
-      for(let i = 0; i < adjacentElements.length; i++) {
-         const adjacentIndex = parseInt(adjacentElements[i] - 1);
-         const adjacentElement = elementsArray[adjacentIndex];
-         // console.log(adjacentElement);
-         if(isBomb(adjacentElement, bombsPositions)) {
-            adjacentBombs++;
-         }
-      }
-   }
-
-   return adjacentBombs;
-}
-
-
 // Find adjacents cells for a specified element
 function calcAdjacentsArray(difficulty) {
    const adjacentElementsArray = [];
-   const gridElementNum = difficulty.rows * difficulty.columns;
+   // const gridElementNum = difficulty.rows * difficulty.columns;
    const elementsArray = document.querySelectorAll(".grid-element");
 
-   for(let i = 0; i < gridElementNum; i++) {
-      const element = elementsArray[i];
-      const adjacentElements = findAdjacents(element, difficulty);
+   elementsArray.forEach(el => {
+      // const element = el;
+      const adjacentElements = findAdjacents(el, difficulty);
       adjacentElementsArray.push(adjacentElements);
-   }
+   });
+
+   // for(let i = 0; i < gridElementNum; i++) {
+   //    const element = elementsArray[i];
+   //    const adjacentElements = findAdjacents(element, difficulty);
+   //    adjacentElementsArray.push(adjacentElements);
+   // }
    
    return adjacentElementsArray;
 }
 
 
 // Find adjacents cells for a specified element
+// ATTENTION: array position does not matches the element number!
 function findAdjacents(element, difficulty) {
    const rows = difficulty.rows;
    const columns = difficulty.columns;
@@ -306,42 +246,109 @@ function findAdjacents(element, difficulty) {
    const columnIndex = parseInt(element.dataset.columnIndex);
 
    const adjacentElements = [];
-   // console.log(element);
+
 
    for(let i = Math.max(rowIndex - 1, 1); i <= Math.min(rowIndex + 1, columns); i++) {
       for(let j = Math.max(columnIndex - 1, 1); j <= Math.min(columnIndex + 1, rows); j++) {
          const adjacentElement = document.querySelector(`[data-row-index="${i}"][data-column-index="${j}"]`);
-         // console.log(adjacentElement);
-         // console.log(!((i === rowIndex) && (j === columnIndex)));
          if(!((i === rowIndex) && (j === columnIndex))) {
             adjacentElements.push(adjacentElement.dataset.number);
          }
       }
    }
-   // console.log(adjacentElements);
 
    return adjacentElements;
 }
 
 
-// Controlla se l'elemento è una bomba o no
-function isBomb(element, bombsPositions) {
-   const elementIndex = parseInt(element.dataset.number);
-   if(bombsPositions.includes(elementIndex)) return true;
-   return false;
+// Add the number of adjacent bombs in every blank element
+function addAdjacentBombs(bombsPositions, adjacentElementsArray) {
+   const elementsArray = document.querySelectorAll(".grid-element");
+   const ajdacentBombsArray = [];
+
+   elementsArray.forEach((el, i) => {
+      const adjacentElements = adjacentElementsArray[i];
+      const adjacentBombs = calcAdjacentBombs(el, bombsPositions, elementsArray, adjacentElements);
+      ajdacentBombsArray.push(adjacentBombs);
+   });
+
+   return ajdacentBombsArray;
 }
 
 
-// Rende visibili tutte le bombe
+// Calculate how many bombs are adjacent to the element
+function calcAdjacentBombs(element, bombsPositions, elementsArray, adjacentElements) {
+   let adjacentBombs = 0;
+
+   if(isBomb(element, bombsPositions)) {
+      adjacentBombs = -1; // non ha senso calcolare il numero di bombe adiacente ad una bomba
+   } else {
+      adjacentElements.forEach((el) => {
+         const adjacentIndex = parseInt(el - 1);
+         const adjacentElement = elementsArray[adjacentIndex];
+
+         if(isBomb(adjacentElement, bombsPositions)) {
+            adjacentBombs++;
+         }
+      });
+   }
+
+   return adjacentBombs;
+}
+
+
+// Check if element is a bomb or not
+function isBomb(element, bombsPositions) {
+   const elementIndex = parseInt(element.dataset.number);
+   // console.log(element, ": ", bombsPositions.includes(elementIndex));
+   if(bombsPositions.includes(elementIndex)) {
+      return true;
+   } else {
+      return false;
+   }
+}
+
+
+// Reveal all bombs
 function revealBombs(elementsArray, bombsPositions) {
    for (let i = 0; i < bombsPositions.length; i++) {
       const bombIndex = bombsPositions[i];
-      // console.log(bombsPositions[i]);
       const element = elementsArray[bombIndex - 1];
-      // console.log(elementsArray[bombIndex]);
       element.classList.add("bomb");
    }
 }
+
+
+// Rivela cella - da aggiungere no controllo se già "selected", aggiungere "flip particolare" per celle con numeri
+function revealElement(element, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions) {
+
+   if(element.dataset.selected === "true") { // if already selected, exit
+      return;
+   }
+
+   const elementIndex = element.dataset.number - 1;
+   const adjacentBombs = adjacentBombsArray[elementIndex];
+   element.dataset.selected = "true";
+   element.classList.add("selected");
+
+   if(adjacentBombs > 0) {
+      element.append(adjacentBombs);
+   } else {
+      const adjacentElementsNumbers = adjacentElementsArray[elementIndex];
+
+      adjacentElementsNumbers.forEach((el) => {
+         const adjacentElementIndex = el - 1;
+         const adjacentElement = elementsArray[adjacentElementIndex];
+
+         if(!isBomb(adjacentElement, bombsPositions)) {
+            revealElement(adjacentElement, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions);
+         }
+      });
+   }
+
+   // Check vittoria
+}
+
 
 
 // Chiede all'utente un numero in input e controlla che sia corretto.
