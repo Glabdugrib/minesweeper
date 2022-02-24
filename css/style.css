@@ -109,7 +109,7 @@ main {
    position: relative;
 }
 
-/* main::after {
+main.overlay::after {
    content: "";
    display: block;
    position: absolute;
@@ -117,9 +117,24 @@ main {
    bottom: 0;
    left: 0;
    right: 0;
-   background-color: rgba(0, 0, 0, 0.8);
+   background-color: black;
    z-index: 1;
-} */
+   opacity: 0;
+   animation-duration: 2s;
+   animation-name: main-overlay;
+   animation-fill-mode: forwards;
+   animation-timing-function: ease-in-out;
+}
+
+@keyframes main-overlay {
+   from {
+      opacity: 0;
+   }
+ 
+   to {
+      opacity: 0.8;
+   }
+} 
 
 .grid-wrapper {
    height: 100%;
@@ -192,6 +207,47 @@ main {
    align-items: center;
 }
 
+.grid-element.flag {
+   position: relative;
+}
+
+.grid-element.flag::after {
+   content: "\f024";
+   font-family: "Font Awesome 6 Free";
+   font-weight: 900;
+   font-size: 14px;
+   display: block;
+   position: absolute;
+   top: 0;
+   bottom: 0;
+   right: 0;
+   left: 0;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   color: red;
+}
+
+.grid-element.question {
+   position: relative;
+}
+
+.grid-element.question::after {
+   content: "\3f";
+   font-family: "Font Awesome 6 Free";
+   font-weight: 900;
+   font-size: 14px;
+   display: block;
+   position: absolute;
+   top: 0;
+   bottom: 0;
+   right: 0;
+   left: 0;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
 .popup {
    padding: 50px;
    position: absolute;
@@ -217,7 +273,7 @@ main {
    animation-timing-function: ease-in-out; */
 }
 
-/* @keyframes popup {
+@keyframes popup {
    from {
       width: 0;
       height: 0;
@@ -227,7 +283,7 @@ main {
       width: 300px;
       height: 200px;
    }
-}  */
+} 
 
 .popup_title {
    margin-bottom: 50px;

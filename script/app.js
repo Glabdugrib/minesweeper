@@ -27,7 +27,7 @@ const difficultyParameters = [
       label: "custom",
       value: 4,
       // da controllare tramite input utente
-      rows: 0, 
+      rows: 0,
       columns: 0,
       bombsNum: 0,
       bgColor: "#398AB9"
@@ -46,7 +46,9 @@ difficultySubmit.addEventListener("click", playGame);
 // Execute game
 function playGame() {
 
-   console.log("\nPLAY!");
+   window.addEventListener("contextmenu", e => e.preventDefault());
+
+   // console.log("\nPLAY!");
    let grid = document.querySelector(".grid");
 
    // Reset grid
@@ -77,43 +79,114 @@ function playGame() {
    // console.log(adjacentBombsArray);
 
    // Add select event on grid
+   const gridElementNum = difficulty.rows * difficulty.columns;
    grid.addEventListener("click", selectGridElement);
+
+   // Right click
+   grid.addEventListener("mouseup", rightClick);
 
 
    // Applies selected effects on grid elements and eventually triggers win/gameover
    function selectGridElement(event) {
       const element = event.target.closest(".grid-element");
       const elementsArray = document.querySelectorAll(".grid-element");
+      const state = parseInt(element.dataset.state);
 
-      if (isBomb(element, bombsPositions)) {
-         element.classList.add("exploded");
-         grid.removeEventListener("click", selectGridElement);
-         revealBombs(elementsArray, bombsPositions);
-         console.log("HAI PERSO!");
+      if(state === 0) {
+         if (isBomb(element, bombsPositions)) {
+            element.classList.add("exploded");
+            // grid.removeEventListener("click", selectGridElement);
+            // revealBombs(elementsArray, bombsPositions);
+            // console.log("HAI PERSO!");
+            checkGameover(elementsArray, bombsPositions)
+         } else {
+            revealElement(element, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions);
+            checkVictory();
+         }
+      }
+   }
+
+
+   // Controllo sconfitta
+   function checkGameover(elementsArray, bombsPositions) {
+      grid.removeEventListener("click", selectGridElement);
+      revealBombs(elementsArray, bombsPositions);
+      // modificare DOM
+      // console.log("\nHAI PERSO!");
+
+      getGameoverPopup(false);
+   }
+
+
+   // Controllo vittoria
+   function checkVictory() {
+      const selectedElements = document.querySelectorAll(".selected");
+
+      if(selectedElements.length === (gridElementNum - difficulty.bombsNum)) {
+         // modificare DOM
+         // console.log("\nHAI VINTO!!!");
+
+         getGameoverPopup(true);
+      }
+   }
+
+
+   // Apparizione popup
+   function getGameoverPopup(victory) {
+
+      // const difficultySubmit = document.getElementById("difficulty-submit");
+      difficultySubmit.removeEventListener("click", playGame);
+
+      let messageString;
+
+      if(victory) {
+         messageString = "Victory!";
       } else {
+         messageString = "Game over!";
+      }
+      const main = document.querySelector("main");
+      main.classList.add("overlay");
 
-         revealElement(element, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions);
+      setTimeout(function() {
+         const popup = document.createElement("div");
+         popup.classList.add("popup");
+         popup.innerHTML += `<h2 class="popup_title">${messageString.toUpperCase()}</h2>
+         <button class="popup_play-again">Play again</button>`;
+         main.append(popup);
 
-         // const adjacentBombs = adjacentBombsArray[element.dataset.number - 1];
-         // element.classList.add("selected");
-         // if(adjacentBombs > 0) {
-         //    element.append(adjacentBombs);
-         // } else {
-         //    const elementIndex = parseInt(element.dataset.number) - 1;
-         //    const adjacentElementsNumbers = adjacentElementsArray[elementIndex];
+         const playAgainBtn = document.querySelector(".popup_play-again");
+         playAgainBtn.addEventListener("click", playGame);
 
-         //    for(let i = 0; i < adjacentElements.length; i++) {
-         //       const adjacentElementIndex = parseInt(adjacentElementsNumbers[i]) - 1;
-         //       const adjacentElement = elementsArray[adjacentElementIndex];
+         difficultySubmit.addEventListener("click", playGame);
+      }, 1500);
+   }
 
-         //       if(!isBomb(adjacentElement, bombsPositions)) {
-         //          // Applica la funzione selectGridElement(event) a adjacentElement
-         //          // Forse serve creare una funzione flip/reveal
-         //       }
 
-         //    }
-         // }
-         // // Check vittoria
+   // Right click function
+   function rightClick(event) {
+      if (typeof event === 'object') {
+         if(event.button == 2) {
+            // console.log("Right click");
+            const element = event.target.closest(".grid-element");
+            // console.log(element);
+            const state = parseInt(element.dataset.state);
+
+            switch(state) {
+               case 0:
+                  element.classList.add("flag");
+                  element.dataset.state++;
+                  break;
+               case 1:
+                  element.classList.remove("flag");
+                  element.classList.add("question");
+                  element.dataset.state++;
+                  break;
+               case 2:
+                  element.classList.remove("question");
+                  element.dataset.state = 0;
+                  break;    
+            }
+         }
       }
    }
 
@@ -121,9 +194,20 @@ function playGame() {
 
 // Reset grid content
 function resetGrid(grid) {
+
+   console.clear();
+
    // grid.innerHTML = "";
-   if(grid != null) {
+   if (grid != null) {
       grid.remove();
+   }
+
+   const main = document.querySelector("main");
+   main.classList.remove("overlay");
+
+   const popup = document.querySelector(".popup");
+   if(popup != null) {
+      popup.remove();
    }
 
    grid = document.createElement("div");
@@ -148,10 +232,10 @@ function generateGridDimensions(difficultyValue) {
 
    difficultyParameters.forEach(el => {
       if (el.value === difficultyValue) {
-         difficulty = {...el};
+         difficulty = { ...el };
       }
    });
-   
+
    return difficulty;
 }
 
@@ -197,14 +281,15 @@ function generateGrid(grid, difficulty) {
       const element = document.createElement("div");
       element.classList.add("grid-element");
       element.dataset.number = i + 1;
+      element.dataset.state = 0;
 
       // Calc grid rowIndex
       const rowIndex = Math.ceil((i + 1) / columns);
       element.dataset.rowIndex = rowIndex;
-      
+
       // Calc grid columnIndex
       let columnIndex = (i + 1) % columns;
-      if(columnIndex === 0) {
+      if (columnIndex === 0) {
          columnIndex = columns;
       }
       element.dataset.columnIndex = columnIndex;
@@ -226,12 +311,6 @@ function calcAdjacentsArray(difficulty) {
       adjacentElementsArray.push(adjacentElements);
    });
 
-   // for(let i = 0; i < gridElementNum; i++) {
-   //    const element = elementsArray[i];
-   //    const adjacentElements = findAdjacents(element, difficulty);
-   //    adjacentElementsArray.push(adjacentElements);
-   // }
-   
    return adjacentElementsArray;
 }
 
@@ -248,10 +327,10 @@ function findAdjacents(element, difficulty) {
    const adjacentElements = [];
 
 
-   for(let i = Math.max(rowIndex - 1, 1); i <= Math.min(rowIndex + 1, columns); i++) {
-      for(let j = Math.max(columnIndex - 1, 1); j <= Math.min(columnIndex + 1, rows); j++) {
+   for (let i = Math.max(rowIndex - 1, 1); i <= Math.min(rowIndex + 1, columns); i++) {
+      for (let j = Math.max(columnIndex - 1, 1); j <= Math.min(columnIndex + 1, rows); j++) {
          const adjacentElement = document.querySelector(`[data-row-index="${i}"][data-column-index="${j}"]`);
-         if(!((i === rowIndex) && (j === columnIndex))) {
+         if (!((i === rowIndex) && (j === columnIndex))) {
             adjacentElements.push(adjacentElement.dataset.number);
          }
       }
@@ -280,14 +359,14 @@ function addAdjacentBombs(bombsPositions, adjacentElementsArray) {
 function calcAdjacentBombs(element, bombsPositions, elementsArray, adjacentElements) {
    let adjacentBombs = 0;
 
-   if(isBomb(element, bombsPositions)) {
+   if (isBomb(element, bombsPositions)) {
       adjacentBombs = -1; // non ha senso calcolare il numero di bombe adiacente ad una bomba
    } else {
       adjacentElements.forEach((el) => {
          const adjacentIndex = parseInt(el - 1);
          const adjacentElement = elementsArray[adjacentIndex];
 
-         if(isBomb(adjacentElement, bombsPositions)) {
+         if (isBomb(adjacentElement, bombsPositions)) {
             adjacentBombs++;
          }
       });
@@ -301,7 +380,7 @@ function calcAdjacentBombs(element, bombsPositions, elementsArray, adjacentEleme
 function isBomb(element, bombsPositions) {
    const elementIndex = parseInt(element.dataset.number);
    // console.log(element, ": ", bombsPositions.includes(elementIndex));
-   if(bombsPositions.includes(elementIndex)) {
+   if (bombsPositions.includes(elementIndex)) {
       return true;
    } else {
       return false;
@@ -314,7 +393,10 @@ function revealBombs(elementsArray, bombsPositions) {
    for (let i = 0; i < bombsPositions.length; i++) {
       const bombIndex = bombsPositions[i];
       const element = elementsArray[bombIndex - 1];
-      element.classList.add("bomb");
+      const state = parseInt(element.dataset.state);
+      if(state === 0) {
+         element.classList.add("bomb");
+      }
    }
 }
 
@@ -322,7 +404,7 @@ function revealBombs(elementsArray, bombsPositions) {
 // Rivela cella - da aggiungere no controllo se già "selected", aggiungere "flip particolare" per celle con numeri
 function revealElement(element, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions) {
 
-   if(element.dataset.selected === "true") { // if already selected, exit
+   if (element.dataset.selected === "true") { // if already selected, exit
       return;
    }
 
@@ -331,7 +413,7 @@ function revealElement(element, adjacentBombsArray, adjacentElementsArray, eleme
    element.dataset.selected = "true";
    element.classList.add("selected");
 
-   if(adjacentBombs > 0) {
+   if (adjacentBombs > 0) {
       element.append(adjacentBombs);
    } else {
       const adjacentElementsNumbers = adjacentElementsArray[elementIndex];
@@ -340,7 +422,7 @@ function revealElement(element, adjacentBombsArray, adjacentElementsArray, eleme
          const adjacentElementIndex = el - 1;
          const adjacentElement = elementsArray[adjacentElementIndex];
 
-         if(!isBomb(adjacentElement, bombsPositions)) {
+         if (!isBomb(adjacentElement, bombsPositions)) {
             revealElement(adjacentElement, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions);
          }
       });
