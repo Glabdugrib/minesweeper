@@ -301,11 +301,15 @@ function generateGrid(grid, difficulty) {
 
 // Find adjacents cells for a specified element
 function calcAdjacentsArray(difficulty) {
+   // console.log(difficulty);
    const adjacentElementsArray = [];
    // const gridElementNum = difficulty.rows * difficulty.columns;
    const elementsArray = document.querySelectorAll(".grid-element");
 
+   // console.log(elementsArray);
+
    elementsArray.forEach(el => {
+      // console.log(el);
       // const element = el;
       const adjacentElements = findAdjacents(el, difficulty);
       adjacentElementsArray.push(adjacentElements);
@@ -326,10 +330,10 @@ function findAdjacents(element, difficulty) {
 
    const adjacentElements = [];
 
-
-   for (let i = Math.max(rowIndex - 1, 1); i <= Math.min(rowIndex + 1, columns); i++) {
-      for (let j = Math.max(columnIndex - 1, 1); j <= Math.min(columnIndex + 1, rows); j++) {
+   for (let i = Math.max(rowIndex - 1, 1); i <= Math.min(rowIndex + 1, rows); i++) {
+      for (let j = Math.max(columnIndex - 1, 1); j <= Math.min(columnIndex + 1, columns); j++) {
          const adjacentElement = document.querySelector(`[data-row-index="${i}"][data-column-index="${j}"]`);
+
          if (!((i === rowIndex) && (j === columnIndex))) {
             adjacentElements.push(adjacentElement.dataset.number);
          }
