@@ -23,15 +23,15 @@ const difficultyParameters = [
       bombsNum: 99,
       bgColor: "#FF6464"
    },
-   {
-      label: "custom",
-      value: 4,
-      // da controllare tramite input utente
-      rows: 0,
-      columns: 0,
-      bombsNum: 0,
-      bgColor: "#398AB9"
-   },
+   // {
+   //    label: "custom",
+   //    value: 4,
+   //    // da controllare tramite input utente
+   //    rows: 0,
+   //    columns: 0,
+   //    bombsNum: 0,
+   //    bgColor: "#398AB9"
+   // },
 ];
 
 const gridWrapper = document.querySelector(".grid-wrapper");
@@ -41,10 +41,93 @@ const difficultySubmit = document.getElementById("difficulty-submit");
 difficultySubmit.addEventListener("click", playGame);
 
 
+// Timer
+let isStopwatchRunning = false;
+
+let hours = 0;
+let minutes = 0;
+let seconds = 0;
+const hoursDOM = document.querySelector(".timer_hours");
+const minutesDOM = document.querySelector(".timer_minutes");
+const secondsDOM = document.querySelector(".timer_seconds");
+const startBtn = document.querySelector(".start-btn");
+
+let Interval;
+
+function startStopwatch() {
+   resetStopwatch();
+   isStopwatchRunning = true;
+   Interval = setInterval( stopwatch, 1000 );
+}
+
+function stopStopwatch() {
+   clearInterval( Interval );
+}
+
+function resetStopwatch() {
+   stopStopwatch();
+   secondsDOM.innerHTML = "00"
+   seconds = 0;
+   minutesDOM.innerHTML = "00";
+   minutes = 0;
+   hoursDOM.innerHTML = "00";
+   hours = 0;
+   isStopwatchRunning = false;
+}
+
+function stopwatch() {
+   seconds++;
+
+   if( seconds <= 9 ) {
+      secondsDOM.innerHTML = "0" + seconds;
+   }
+   
+   if( seconds > 9 ) {
+      secondsDOM.innerHTML = seconds;
+   }
+   
+   if( seconds > 59 ) {
+      minutes++;
+      minutesDOM.innerHTML = "0" + minutes;
+      seconds = 0;
+      secondsDOM.innerHTML = "00";
+   }
+
+   if( minutes > 9 ) {
+      minutesDOM.innerHTML = minutes;
+   }
+
+   if( minutes > 59 ) {
+      hours++;
+      hoursDOM.innerHTML = "0" + hours;
+      minutes = 0;
+      minutesDOM.innerHTML = "00";
+   }
+
+   if( hours > 9 ) {
+      hoursDOM.innerHTML = hours;
+   }
+
+   if( hours > 23 ) {
+      secondsDOM.innerHTML = "00"
+      seconds = 0;
+      minutesDOM.innerHTML = "00";
+      minutes = 0;
+      hoursDOM.innerHTML = "00";
+      hours = 0;
+   }
+}
+
+
+
+
+
 // FUNCTIONS
 
 // Execute game
 function playGame() {
+
+   resetStopwatch();
 
    window.addEventListener("contextmenu", e => e.preventDefault());
 
@@ -60,6 +143,9 @@ function playGame() {
    // Calculate grid dimensions based on difficulty
    const difficulty = generateGridDimensions(difficultyValue);
 
+   // Setup info panel
+   // setupInfo(difficulty);
+
    // Calculate bombs indexes
    const bombsPositions = generateBombs(difficulty);
    console.log("\nBombs positions");
@@ -68,7 +154,7 @@ function playGame() {
    // Populate grid
    generateGrid(grid, difficulty);
 
-   // PROVA: trovia adiacenti
+   // PROVA: trova adiacenti
    const adjacentElementsArray = calcAdjacentsArray(difficulty);
    // console.log("\nAdjacent elements array");
    // console.log(adjacentElementsArray);
@@ -91,6 +177,11 @@ function playGame() {
       const element = event.target.closest(".grid-element");
       const elementsArray = document.querySelectorAll(".grid-element");
       const state = parseInt(element.dataset.state);
+
+      // Start stopwatch
+      if( !isStopwatchRunning ) {
+         startStopwatch()
+      }
 
       if(state === 0) {
          if (isBomb(element, bombsPositions)) {
@@ -133,6 +224,8 @@ function playGame() {
 
    // Apparizione popup
    function getGameoverPopup(victory) {
+
+      stopStopwatch();
 
       // const difficultySubmit = document.getElementById("difficulty-submit");
       difficultySubmit.removeEventListener("click", playGame);
@@ -202,6 +295,11 @@ function resetGrid(grid) {
       grid.remove();
    }
 
+   // const infoPanel = document.querySelector(".info-panel");
+   // if (infoPanel != null) {
+   //    infoPanel.remove();
+   // }
+
    const main = document.querySelector("main");
    main.classList.remove("overlay");
 
@@ -238,6 +336,32 @@ function generateGridDimensions(difficultyValue) {
 
    return difficulty;
 }
+
+
+// 
+// function setupInfo(difficulty) {
+//    const main = document.querySelector("main");
+//    const infoPanel = document.createElement("div");
+//    infoPanel.classList.add("info-panel");
+//    infoPanel.innerHTML = `<p class="info_difficulty">Difficulty: <span></span></p>
+//    <p class="info_grid">Grid: <span></span></p>
+//    <p class="info_bombs">Bombs: <span></span></p>
+//    <p class="info_flags">Flags: <span></span></p>
+//    <p class="info_timer"></p>`
+//    main.append(infoPanel);
+
+//    const infoDifficulty = document.querySelector(".info_difficulty span");
+//    const infoGrid = document.querySelector(".info_grid span");
+//    const infoBombs = document.querySelector(".info_bombs span");
+//    const infoFlags = document.querySelector(".info_flags span");
+//    const infoTimer = document.querySelector(".info_timer");
+
+//    infoDifficulty.innerHTML = difficulty.label;
+//    infoGrid.innerHTML = `${difficulty.rows}x${difficulty.columns}`;
+//    infoBombs.innerHTML = difficulty.bombsNum;
+//    infoFlags.innerHTML = 0;
+//    infoTimer.innerHTML = "00:00";
+// }
 
 
 // Generate different indexes for bombs

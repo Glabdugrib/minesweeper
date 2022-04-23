@@ -61,9 +61,12 @@ header {
 }
 
 .col-logo .img-wrapper {
-   height: 50px;
+   height: 80px;
    aspect-ratio: 1;
    margin-right: 10px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
 }
 
 .col-logo .img-wrapper img {
@@ -107,6 +110,8 @@ main {
    /* height: calc(100vh - 100px - 54px); */
    flex-grow: 1;
    position: relative;
+   display: flex;
+   flex-direction: column;
 }
 
 main.overlay::after {
@@ -134,7 +139,11 @@ main.overlay::after {
    to {
       opacity: 0.8;
    }
-} 
+}
+
+.timer {
+   background-color: yellow;
+}
 
 .grid-wrapper {
    height: 100%;
@@ -301,10 +310,10 @@ main.overlay::after {
    font-weight: 800;
 }
 
-.info-panel {
-   padding: 50px;
-   /* width: 200px;
-   height: 500px; */
+/* .info-panel {
+   padding: 50px 30px;
+   width: 200px;
+   height: 500px;
    position: absolute;
    top: 50%;
    transform: translateY(-50%);
@@ -322,7 +331,7 @@ main.overlay::after {
 
 .info-panel span {
    display: inline-block;
-   margin-left: 8px;
+   margin-left: 3px;
    font-size: 18px;
    font-weight: 400;
 }
@@ -331,7 +340,7 @@ main.overlay::after {
    font-size: 40px;
    text-align: center;
    margin-top: 50px;
-}
+} */
 
 /* FOOTER */
 
@@ -341,6 +350,6 @@ footer {
    /* border: 1px solid black; */
 }
 
-footer .heart {
-   font-size: 20px;
+footer .credits {
+   text-align: center;
 }
