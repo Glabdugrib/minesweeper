@@ -1,3 +1,4 @@
+// Difficulty array
 const difficultyParameters = [
    {
       label: "beginner",
@@ -22,20 +23,11 @@ const difficultyParameters = [
       columns: 30,
       bombsNum: 99,
       bgColor: "#FF6464"
-   },
-   // {
-   //    label: "custom",
-   //    value: 4,
-   //    // da controllare tramite input utente
-   //    rows: 0,
-   //    columns: 0,
-   //    bombsNum: 0,
-   //    bgColor: "#398AB9"
-   // },
+   }
 ];
 
-const gridWrapper = document.querySelector(".grid-wrapper");
 
+const gridWrapper = document.querySelector(".grid-wrapper");
 
 const difficultySubmit = document.getElementById("difficulty-submit");
 difficultySubmit.addEventListener("click", playGame);
@@ -47,6 +39,8 @@ let isStopwatchRunning = false;
 let hours = 0;
 let minutes = 0;
 let seconds = 0;
+
+const timer = document.querySelector(".timer");
 const hoursDOM = document.querySelector(".timer_hours");
 const minutesDOM = document.querySelector(".timer_minutes");
 const secondsDOM = document.querySelector(".timer_seconds");
@@ -56,6 +50,7 @@ let Interval;
 
 function startStopwatch() {
    resetStopwatch();
+   timer.classList.add("visible");
    isStopwatchRunning = true;
    Interval = setInterval( stopwatch, 1000 );
 }
@@ -66,6 +61,7 @@ function stopStopwatch() {
 
 function resetStopwatch() {
    stopStopwatch();
+   timer.classList.remove("visible");
    secondsDOM.innerHTML = "00"
    seconds = 0;
    minutesDOM.innerHTML = "00";
@@ -120,18 +116,16 @@ function stopwatch() {
 
 
 
-
-
-// FUNCTIONS
+// GAME FUNCTIONS
 
 // Execute game
 function playGame() {
 
    resetStopwatch();
 
+   // Prevent mouse right click 
    window.addEventListener("contextmenu", e => e.preventDefault());
 
-   // console.log("\nPLAY!");
    let grid = document.querySelector(".grid");
 
    // Reset grid
@@ -143,26 +137,17 @@ function playGame() {
    // Calculate grid dimensions based on difficulty
    const difficulty = generateGridDimensions(difficultyValue);
 
-   // Setup info panel
-   // setupInfo(difficulty);
-
    // Calculate bombs indexes
    const bombsPositions = generateBombs(difficulty);
-   console.log("\nBombs positions");
-   console.log(bombsPositions);
 
    // Populate grid
    generateGrid(grid, difficulty);
 
-   // PROVA: trova adiacenti
+   // Calc arrays of adjacents elements for every element
    const adjacentElementsArray = calcAdjacentsArray(difficulty);
-   // console.log("\nAdjacent elements array");
-   // console.log(adjacentElementsArray);
 
    // Add numbers of adjacent bombs
    const adjacentBombsArray = addAdjacentBombs(bombsPositions, adjacentElementsArray);
-   // console.log("\nAdjacent bombs array");
-   // console.log(adjacentBombsArray);
 
    // Add select event on grid
    const gridElementNum = difficulty.rows * difficulty.columns;
@@ -171,7 +156,6 @@ function playGame() {
    // Right click
    grid.addEventListener("mouseup", rightClick);
 
-
    // Applies selected effects on grid elements and eventually triggers win/gameover
    function selectGridElement(event) {
       const element = event.target.closest(".grid-element");
@@ -179,16 +163,13 @@ function playGame() {
       const state = parseInt(element.dataset.state);
 
       // Start stopwatch
-      if( !isStopwatchRunning ) {
-         startStopwatch()
+      if( !isStopwatchRunning && !element.classList.contains('flag') && !element.classList.contains('question') ) {
+         startStopwatch();
       }
 
       if(state === 0) {
          if (isBomb(element, bombsPositions)) {
             element.classList.add("exploded");
-            // grid.removeEventListener("click", selectGridElement);
-            // revealBombs(elementsArray, bombsPositions);
-            // console.log("HAI PERSO!");
             checkGameover(elementsArray, bombsPositions)
          } else {
             revealElement(element, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions);
@@ -198,36 +179,29 @@ function playGame() {
    }
 
 
-   // Controllo sconfitta
+   // Check defeat
    function checkGameover(elementsArray, bombsPositions) {
       grid.removeEventListener("click", selectGridElement);
       revealBombs(elementsArray, bombsPositions);
-      // modificare DOM
-      // console.log("\nHAI PERSO!");
-
       getGameoverPopup(false);
    }
 
 
-   // Controllo vittoria
+   // Check victory
    function checkVictory() {
       const selectedElements = document.querySelectorAll(".selected");
 
       if(selectedElements.length === (gridElementNum - difficulty.bombsNum)) {
-         // modificare DOM
-         // console.log("\nHAI VINTO!!!");
-
          getGameoverPopup(true);
       }
    }
 
 
-   // Apparizione popup
+   // Gameover popup appereance
    function getGameoverPopup(victory) {
 
       stopStopwatch();
 
-      // const difficultySubmit = document.getElementById("difficulty-submit");
       difficultySubmit.removeEventListener("click", playGame);
 
       let messageString;
@@ -259,46 +233,40 @@ function playGame() {
    function rightClick(event) {
       if (typeof event === 'object') {
          if(event.button == 2) {
-            // console.log("Right click");
             const element = event.target.closest(".grid-element");
-            // console.log(element);
-            const state = parseInt(element.dataset.state);
 
-            switch(state) {
-               case 0:
-                  element.classList.add("flag");
-                  element.dataset.state++;
-                  break;
-               case 1:
-                  element.classList.remove("flag");
-                  element.classList.add("question");
-                  element.dataset.state++;
-                  break;
-               case 2:
-                  element.classList.remove("question");
-                  element.dataset.state = 0;
-                  break;    
-            }
+
+            // If elements has not been selected -> apply right click effects
+            if( !element.classList.contains('selected') ) {
+               const state = parseInt(element.dataset.state);
+
+               switch(state) {
+                  case 0:
+                     element.classList.add("flag");
+                     element.dataset.state++;
+                     break;
+                  case 1:
+                     element.classList.remove("flag");
+                     element.classList.add("question");
+                     element.dataset.state++;
+                     break;
+                  case 2:
+                     element.classList.remove("question");
+                     element.dataset.state = 0;
+                     break;    
+               }
+            }     
          }
       }
    }
-
 }
 
 // Reset grid content
 function resetGrid(grid) {
 
-   console.clear();
-
-   // grid.innerHTML = "";
    if (grid != null) {
       grid.remove();
    }
-
-   // const infoPanel = document.querySelector(".info-panel");
-   // if (infoPanel != null) {
-   //    infoPanel.remove();
-   // }
 
    const main = document.querySelector("main");
    main.classList.remove("overlay");
@@ -319,7 +287,6 @@ function resetGrid(grid) {
 // Store selected difficulty
 function getDifficultyChoice() {
    const difficultySelect = document.getElementById("difficulty-select");
-   // console.log(`difficultySelect.value: ${difficultySelect.value}`);
    return parseInt(difficultySelect.value);
 }
 
@@ -336,33 +303,6 @@ function generateGridDimensions(difficultyValue) {
 
    return difficulty;
 }
-
-
-// 
-// function setupInfo(difficulty) {
-//    const main = document.querySelector("main");
-//    const infoPanel = document.createElement("div");
-//    infoPanel.classList.add("info-panel");
-//    infoPanel.innerHTML = `<p class="info_difficulty">Difficulty: <span></span></p>
-//    <p class="info_grid">Grid: <span></span></p>
-//    <p class="info_bombs">Bombs: <span></span></p>
-//    <p class="info_flags">Flags: <span></span></p>
-//    <p class="info_timer"></p>`
-//    main.append(infoPanel);
-
-//    const infoDifficulty = document.querySelector(".info_difficulty span");
-//    const infoGrid = document.querySelector(".info_grid span");
-//    const infoBombs = document.querySelector(".info_bombs span");
-//    const infoFlags = document.querySelector(".info_flags span");
-//    const infoTimer = document.querySelector(".info_timer");
-
-//    infoDifficulty.innerHTML = difficulty.label;
-//    infoGrid.innerHTML = `${difficulty.rows}x${difficulty.columns}`;
-//    infoBombs.innerHTML = difficulty.bombsNum;
-//    infoFlags.innerHTML = 0;
-//    infoTimer.innerHTML = "00:00";
-// }
-
 
 // Generate different indexes for bombs
 function generateBombs(difficulty) {
@@ -399,7 +339,8 @@ function generateGrid(grid, difficulty) {
 
    grid.style.maxWidth = `${columns * 30}px`; // da sostituire con variabile che pesca da css
    grid.style.maxHeigth = `${rows * 30}px`; // da sostituire con variabile che pesca da css
-   gridWrapper.style.backgroundColor = `${difficulty.bgColor}`;
+   const main = document.querySelector("main");
+   main.style.backgroundColor = `${difficulty.bgColor}`;
 
    for (let i = 0; i < gridElementNum; i++) {
       const element = document.createElement("div");
@@ -425,16 +366,11 @@ function generateGrid(grid, difficulty) {
 
 // Find adjacents cells for a specified element
 function calcAdjacentsArray(difficulty) {
-   // console.log(difficulty);
+
    const adjacentElementsArray = [];
-   // const gridElementNum = difficulty.rows * difficulty.columns;
    const elementsArray = document.querySelectorAll(".grid-element");
 
-   // console.log(elementsArray);
-
    elementsArray.forEach(el => {
-      // console.log(el);
-      // const element = el;
       const adjacentElements = findAdjacents(el, difficulty);
       adjacentElementsArray.push(adjacentElements);
    });
@@ -488,7 +424,7 @@ function calcAdjacentBombs(element, bombsPositions, elementsArray, adjacentEleme
    let adjacentBombs = 0;
 
    if (isBomb(element, bombsPositions)) {
-      adjacentBombs = -1; // non ha senso calcolare il numero di bombe adiacente ad una bomba
+      adjacentBombs = -1; // no sense in calculating number of adjacents bombs to a bomb
    } else {
       adjacentElements.forEach((el) => {
          const adjacentIndex = parseInt(el - 1);
@@ -507,7 +443,7 @@ function calcAdjacentBombs(element, bombsPositions, elementsArray, adjacentEleme
 // Check if element is a bomb or not
 function isBomb(element, bombsPositions) {
    const elementIndex = parseInt(element.dataset.number);
-   // console.log(element, ": ", bombsPositions.includes(elementIndex));
+
    if (bombsPositions.includes(elementIndex)) {
       return true;
    } else {
@@ -529,7 +465,7 @@ function revealBombs(elementsArray, bombsPositions) {
 }
 
 
-// Rivela cella - da aggiungere no controllo se già "selected", aggiungere "flip particolare" per celle con numeri
+// Riveals cell
 function revealElement(element, adjacentBombsArray, adjacentElementsArray, elementsArray, bombsPositions) {
 
    if (element.dataset.selected === "true") { // if already selected, exit
@@ -540,6 +476,10 @@ function revealElement(element, adjacentBombsArray, adjacentElementsArray, eleme
    const adjacentBombs = adjacentBombsArray[elementIndex];
    element.dataset.selected = "true";
    element.classList.add("selected");
+
+   // Removes right click icons
+   element.classList.remove('flag');
+   element.classList.contains('question');
 
    if (adjacentBombs > 0) {
       element.append(adjacentBombs);
@@ -555,33 +495,4 @@ function revealElement(element, adjacentBombsArray, adjacentElementsArray, eleme
          }
       });
    }
-
-   // Check vittoria
 }
-
-
-
-// Chiede all'utente un numero in input e controlla che sia corretto.
-// function getUserInt(question, min, max) {
-//    let num;
-//    let checkInput;
-//    let errorMessage = "INPUT ERRATO: ";
-//    do {
-//       checkInput = true;
-//       num = parseInt(prompt(question));
-//       console.log(num);
-//       if (isNaN(num)) {
-//          checkInput = false;
-//          alert(errorMessage + "non hai inserito un numero.");
-//       } else if (num < min) {
-//          checkInput = false;
-//          alert(errorMessage + `il numero dev'essere maggiore o uguale a ${min}.`);
-//       } else if (num > max) {
-//          checkInput = false;
-//          alert(errorMessage + `il numero dev'essere minore o uguale a ${max}.`);
-//       }
-//       console.log(checkInput);
-//    } while (!checkInput);
-
-//    return num;
-// }

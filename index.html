@@ -4,21 +4,25 @@
    <meta charset="UTF-8">
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
    <link rel="stylesheet" href="css/style.css">
-   <title>Minesweeper</title>
+   <title>MineSweeper</title>
 </head>
 <body>
 
+   <!-- HEADER -->
    <header>
       <div class="container">
          <div class="row">
+            <!-- Logo section -->
             <div class="col col-logo">
                <div class="img-wrapper">
                   <img src="img/Bomb.webp" alt="">
                </div>
-               <h2>Minesweeper</h2>
+               <h1 class="main-title">MineSweeper</h1>
             </div>
+            <!-- Difficulty and play btn -->
             <div class="col col-controls">
                <label for="difficulty-select">Difficulty:</label>
                <select name="difficulty-select" id="difficulty-select">
@@ -26,7 +30,6 @@
                   <option value="1">Beginner</option>
                   <option value="2">Intermediate</option>
                   <option value="3">Expert</option>
-                  <!-- <option value="4">Custom</option> -->
                </select>
                <button id="difficulty-submit">Play</button>
             </div>
@@ -34,25 +37,25 @@
       </div>
    </header>
    
+   <!-- MAIN -->
    <main>
+      <!-- Timer -->
       <div class="timer">
-         <span class="timer_hours">00</span>:
-         <span class="timer_minutes">00</span>:
-         <span class="timer_seconds">00</span>
+         <span class="timer_hours">00</span>:<span class="timer_minutes">00</span>:<span class="timer_seconds">00</span>
       </div>
-      <button class="start-btn">Start</button>
+      <!-- Grid -->
       <div class="grid-wrapper">
-         <!-- <div class="grid" oncontextmenu="return false;"> -->
          <div class="grid">
          </div>
       </div>
    </main>
 
+   <!-- FOOTER -->
    <footer>
-         <div class="credits">
-            <p>©2022 - Minesweeper by <a href="https://www.linkedin.com/in/simone-sada/">Simone Sada</a> aka <a href="https://github.com/Glabdugrib">@Glabdugrib</a></p>
-            <p>Built with Javascript</p>
-         </div>
+      <!-- Credits section -->
+      <div class="credits">
+         <p>©2022 - MineSweeper by <a href="https://www.linkedin.com/in/simone-sada/">Simone Sada</a> aka <a href="https://github.com/Glabdugrib">@Glabdugrib</a></p>
+      </div>
    </footer>
 
    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
